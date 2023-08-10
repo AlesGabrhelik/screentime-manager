@@ -68,8 +68,12 @@ class MainActivity : AppCompatActivity() {
                 val packageName = selectedAppInfo.packageName
 
                 // Save the selected item to the list
-                selectedApps.add(packageName)
-                saveSelectedApp(packageName)
+                if (packageName !in selectedApps) {
+                    selectedApps.add(packageName)
+                    saveSelectedApp(packageName)
+                }
+
+
                 // Hide the ListView and show the button again
                 appListView.visibility = ListView.GONE
                 chooseAppButton.visibility = FloatingActionButton.VISIBLE
