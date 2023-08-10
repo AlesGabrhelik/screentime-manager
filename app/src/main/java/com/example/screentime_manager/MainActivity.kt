@@ -99,5 +99,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun returnSelectedApp() {
+        GlobalScope.launch {
+            selectedAppDao.getAllSelectedApps()
+        }
+    }
+
 
 }
