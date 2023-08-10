@@ -3,6 +3,7 @@ package com.example.screentime_manager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,28 +45,27 @@ class MainActivity : AppCompatActivity() {
         appRecyclerView.adapter = appAdapter
         appRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        // Initialize the Room database and DAO
+        // Init database
         val database = AppDatabase.getDatabase(applicationContext)
         selectedAppDao = database.selectedAppDao()
 
-        // Load selected apps from the database and update RecyclerView
+        // Load selected apps
         GlobalScope.launch {
             val selectedAppsFromDb = selectedAppDao.getAllSelectedApps()
+            Log.d("MYTAG", "app added to database")
             selectedApps.addAll(selectedAppsFromDb.map { it.packageName })
             runOnUiThread {
                 appAdapter.notifyDataSetChanged()
+                appRecyclerView.visibility = ListView.VISIBLE
             }
 
             appListView.setOnItemClickListener { _, _, position, _ ->
                 val selectedAppInfo = apps[position]
                 val packageName = selectedAppInfo.packageName
 
-                // Update the main activity with the selected app information
-                // For example, update a TextView or start a new activity
-
                 // Save the selected item to the list
                 selectedApps.add(packageName)
-
+                saveSelectedApp(packageName)
                 // Hide the ListView and show the button again
                 appListView.visibility = ListView.GONE
                 chooseAppButton.visibility = FloatingActionButton.VISIBLE
