@@ -1,17 +1,17 @@
 package com.example.screentime_manager
 
-import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.ListView
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -36,8 +36,13 @@ class MainActivity : AppCompatActivity() {
         val packageManager: PackageManager = packageManager
         val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
 
-        val appNames = apps.map { it.loadLabel(packageManager).toString() }
-
+        val userInstalledApps = apps.filter { app ->
+            packageManager.getLaunchIntentForPackage(app.packageName) != null// &&
+                   // (app.flags and ApplicationInfo.FLAG_SYSTEM == 0) &&
+                    //(app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP == 0)
+        }
+        val appNames = userInstalledApps.map { it.loadLabel(packageManager).toString() }
+        Log.d("MyTag", appNames.toString())
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, appNames)
         appListView.adapter = adapter
 
@@ -52,7 +57,6 @@ class MainActivity : AppCompatActivity() {
         // Load selected apps
         GlobalScope.launch {
             val selectedAppsFromDb = selectedAppDao.getAllSelectedApps()
-            Log.d("MYTAG", "app added to database")
             selectedApps.addAll(selectedAppsFromDb.map { it.packageName })
             runOnUiThread {
                 appAdapter.notifyDataSetChanged()
@@ -60,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             appListView.setOnItemClickListener { _, _, position, _ ->
-                val selectedAppInfo = apps[position]
+                val selectedAppInfo = userInstalledApps[position]
                 val packageName = selectedAppInfo.packageName
 
                 // Save the selected item to the list
@@ -90,4 +94,6 @@ class MainActivity : AppCompatActivity() {
             selectedAppDao.deleteSelectedApp(packageName)
         }
     }
+
+
 }
